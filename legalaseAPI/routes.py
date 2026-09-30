@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from google.genai.errors import ServerError
 
 from ai_core.gemini_generator import generate_legal_document
 
@@ -28,6 +29,11 @@ def generate_document(request: DocumentRequest):
             "document_type": request.document_type,
             "document": document
         }
+    except ServerError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Gemini is temporarily unavailable. Please try again shortly."
+        ) from exc
     except Exception as exc:
         raise HTTPException(
             status_code=400,

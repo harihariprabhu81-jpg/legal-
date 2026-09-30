@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from google.genai.errors import ServerError
 
 load_dotenv()
 
@@ -49,6 +50,8 @@ Do not invent important facts that were not provided.
         )
         return response.text
     except Exception as exc:  # pragma: no cover - runtime API integration error path
+        if isinstance(exc, ServerError) and exc.code >= 500:
+            raise
         message = str(exc)
         if "401" in message or "UNAUTHENTICATED" in message or "API key" in message.lower():
             raise RuntimeError(
